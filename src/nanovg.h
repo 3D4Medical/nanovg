@@ -576,6 +576,8 @@ void nvgTextAlign(NVGcontext* ctx, int align);
 
 // Sets the font face based on specified id of current text style.
 void nvgFontFaceId(NVGcontext* ctx, int font);
+    
+int nvgGetFontFaceId(NVGcontext* ctx);
 
 // Sets the font face based on specified name of current text style.
 void nvgFontFace(NVGcontext* ctx, const char* font);

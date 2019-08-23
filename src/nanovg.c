@@ -2358,6 +2358,11 @@ void nvgFontFace(NVGcontext* ctx, const char* font)
 	state->fontId = fonsGetFontByName(ctx->fs, font);
 }
 
+int nvgGetFontFaceId(NVGcontext* ctx) {
+    NVGstate* state = nvg__getState(ctx);
+    return state->fontId;
+}
+
 static float nvg__quantize(float a, float d)
 {
 	return ((int)(a / d + 0.5f)) * d;
@@ -2630,7 +2635,7 @@ int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, floa
 			case 9:			// \t
 			case 11:		// \v
 			case 12:		// \f
-			case 32:		// space
+//            case 32:        // space
 			case 0x00a0:	// NBSP
 				type = NVG_SPACE;
 				break;
