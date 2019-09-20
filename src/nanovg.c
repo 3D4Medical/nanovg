@@ -2635,7 +2635,7 @@ int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, floa
 			case 9:			// \t
 			case 11:		// \v
 			case 12:		// \f
-//            case 32:        // space
+            case 32:        // space
 			case 0x00a0:	// NBSP
 				type = NVG_SPACE;
 				break;
@@ -2660,6 +2660,8 @@ int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, floa
 					type = NVG_CHAR;
 				break;
 		}
+        
+//        printf("process: %s", iter.str == NULL ? "…" : iter.str);
 
 		if (type == NVG_NEWLINE) {
 			// Always handle new lines.
@@ -2677,40 +2679,40 @@ int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, floa
 			breakWidth = 0.0;
 			breakMaxX = 0.0;
 			// Indicate to skip the white space at the beginning of the row.
-			rowStart = NULL;
-			rowEnd = NULL;
-			rowWidth = 0;
-			rowMinX = rowMaxX = 0;
+            rowStart = NULL;
+            rowEnd = NULL;
+            rowWidth = 0;
+            rowMinX = rowMaxX = 0;
 		} else {
 			if (rowStart == NULL) {
 				// Skip white space until the beginning of the line
-				if (type == NVG_CHAR || type == NVG_CJK_CHAR) {
+				if (type == NVG_CHAR || type == NVG_CJK_CHAR || type == NVG_SPACE) {
 					// The current char is the row so far
-					rowStartX = iter.x;
-					rowStart = iter.str;
-					rowEnd = iter.next;
-					rowWidth = iter.nextx - rowStartX; // q.x1 - rowStartX;
-					rowMinX = q.x0 - rowStartX;
-					rowMaxX = q.x1 - rowStartX;
-					wordStart = iter.str;
-					wordStartX = iter.x;
-					wordMinX = q.x0 - rowStartX;
-					// Set null break point
-					breakEnd = rowStart;
-					breakWidth = 0.0;
-					breakMaxX = 0.0;
+                    rowStartX = iter.x;
+                    rowStart = iter.str;
+                    rowEnd = iter.next;
+                    rowWidth = iter.nextx - rowStartX; // q.x1 - rowStartX;
+                    rowMinX = q.x0 - rowStartX;
+                    rowMaxX = q.x1 - rowStartX;
+                    wordStart = iter.str;
+                    wordStartX = iter.x;
+                    wordMinX = q.x0 - rowStartX;
+                    // Set null break point
+                    breakEnd = rowStart;
+                    breakWidth = 0.0;
+                    breakMaxX = 0.0;
 				}
 			} else {
 				float nextWidth = iter.nextx - rowStartX;
 
 				// track last non-white space character
-				if (type == NVG_CHAR || type == NVG_CJK_CHAR) {
+				if (type == NVG_CHAR || type == NVG_CJK_CHAR || type == NVG_SPACE) {
 					rowEnd = iter.next;
 					rowWidth = iter.nextx - rowStartX;
 					rowMaxX = q.x1 - rowStartX;
 				}
 				// track last end of a word
-				if (((ptype == NVG_CHAR || ptype == NVG_CJK_CHAR) && type == NVG_SPACE) || type == NVG_CJK_CHAR) {
+				if (((ptype == NVG_CHAR || ptype == NVG_CJK_CHAR || ptype == NVG_SPACE) && type == NVG_SPACE) || type == NVG_CJK_CHAR) {
 					breakEnd = iter.str;
 					breakWidth = rowWidth;
 					breakMaxX = rowMaxX;
