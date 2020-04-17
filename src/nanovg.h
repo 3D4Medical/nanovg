@@ -371,6 +371,8 @@ float nvgRadToDeg(float rad);
 // Returns handle to the image.
 int nvgCreateImage(NVGcontext* ctx, const char* filename, int imageFlags);
 
+int nvgCreateImageFromUrl(NVGcontext* ctx, const char* filename, int imageFlags);
+
 // Creates image by loading it from the specified chunk of memory.
 // Returns handle to the image.
 int nvgCreateImageMem(NVGcontext* ctx, int imageFlags, unsigned char* data, int ndata);

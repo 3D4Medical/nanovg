@@ -392,6 +392,8 @@ distribute, and modify this file as you see fit.
 #include <stdio.h>
 #endif // STBI_NO_STDIO
 
+#include <curl/curl.h>
+
 #define STBI_VERSION 1
 
 enum
@@ -1045,6 +1047,69 @@ STBIDEF stbi_uc *stbi_load(char const *filename, int *x, int *y, int *comp, int 
    result = stbi_load_from_file(f,x,y,comp,req_comp);
    fclose(f);
    return result;
+}
+
+FILE *popen(const char *command, const char *mode);
+int pclose(FILE *stream);
+
+struct FtpFile {
+  const char *filename;
+  FILE *stream;
+};
+
+static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
+{
+  struct FtpFile *out=(struct FtpFile *)stream;
+  if(out && !out->stream) {
+    /* open file for writing */
+    out->stream=fopen(out->filename, "wb");
+    if(!out->stream)
+      return -1; /* failure, can't open file to write */
+  }
+  return fwrite(buffer, size, nmemb, out->stream);
+}
+
+STBIDEF stbi_uc *stbi_load_fromUrl(char const *filename, int *x, int *y, int *comp, int req_comp)
+{
+    CURL *curl;
+    CURLcode res;
+    struct FtpFile ftpfile={
+      "imageFromUrl", /* name to store the file as if succesful */
+      NULL
+    };
+    
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
+    curl = curl_easy_init();
+    if(curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, filename);
+        /* Define our callback to get called when there's data to be read */
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_fwrite);
+        /* Set a pointer to our struct to pass to the callback */
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ftpfile);
+        
+        /* Switch on full protocol/debug output */
+//        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        
+        res = curl_easy_perform(curl);
+        
+        /* always cleanup */
+        curl_easy_cleanup(curl);
+        
+        if(CURLE_OK != res) {
+            /* we failed */
+            fprintf(stderr, "curl told us %d\n", res);
+        }
+    }
+    
+    fclose(ftpfile.stream);
+    FILE *f = stbi__fopen(ftpfile.filename, "rb");
+    unsigned char *result;
+    if (!f) return stbi__errpuc("can't fopen", "Unable to open file");
+    result = stbi_load_from_file(f,x,y,comp,req_comp);
+    fclose(f);
+    curl_global_cleanup();
+    return result;
 }
 
 STBIDEF stbi_uc *stbi_load_from_file(FILE *f, int *x, int *y, int *comp, int req_comp)
